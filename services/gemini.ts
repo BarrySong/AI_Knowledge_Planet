@@ -5,11 +5,8 @@ import { GoogleGenAI } from "@google/genai";
  * 严格遵循安全规范：从环境变量中获取 API Key
  */
 const getApiKey = () => {
-  // 优先尝试从 process.env 获取，如果不存在则返回空字符串以防崩溃
-  return (typeof process !== 'undefined' && process.env?.API_KEY) || "";
+  return process.env.API_KEY || "";
 };
-
-const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
 /**
  * 使用 gemini-3-pro-preview 模型。
@@ -21,15 +18,18 @@ export async function askGemini(concept: string, question: string) {
   
   if (!apiKey) {
     return {
-      text: "检测到 API Key 未配置。请在 Vercel 项目设置的环境变量中添加 API_KEY。",
+      text: "检测到 API Key 未配置。请在 Vercel 项目设置的 Environment Variables 中添加 API_KEY 变量，并确保其值为有效的 Gemini API Key。",
       model: CURRENT_MODEL
     };
   }
 
+  // 每次调用创建实例以确保获取最新的 Key（防止构建时的快照问题）
+  const ai = new GoogleGenAI({ apiKey });
+
   try {
     const response = await ai.models.generateContent({
       model: CURRENT_MODEL,
-      contents: `你是一位世界级的 AI 知识科普专家，深谙全球 AI 技术生态（包括 Gemini, Claude, GPT 以及国产大模型如通义千问 Qwen 等）。
+      contents: `你是一位世界级的 AI 知识科普专家，深谙全球 AI 技术生态。
       
       请为一位完全不懂编程和 AI 的普通人解释关于 "${concept}" 的问题。
       
@@ -56,7 +56,7 @@ export async function askGemini(concept: string, question: string) {
     
     if (error.message?.includes("entity was not found") || error.message?.includes("401")) {
       return {
-        text: "哎呀，我的‘通行证’（API Key）似乎遇到了一些问题。请确保 Vercel 环境变量 API_KEY 已正确配置且为有效付费 Key。",
+        text: "API Key 似乎无效或权限不足。请检查 Vercel 环境变量 API_KEY 的设置。",
         model: CURRENT_MODEL
       };
     }

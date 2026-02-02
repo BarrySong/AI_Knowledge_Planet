@@ -7,15 +7,6 @@
     <title>AI 知识星系 - 通俗易懂的 AI 百科</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        // 修复浏览器环境中 process 未定义导致的白屏问题
-        window.process = {
-            env: {
-                // Vercel 会注入环境变量，这里确保 process 对象存在
-                API_KEY: "" 
-            }
-        };
-    </script>
     <style>
         body {
             margin: 0;
@@ -31,7 +22,6 @@
         .concept-node:hover {
             filter: brightness(1.2) drop-shadow(0 0 10px rgba(255,255,255,0.5));
         }
-        /* Hide scrollbars but keep functionality */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -44,17 +34,19 @@
 {
   "imports": {
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.39.0",
     "react": "https://esm.sh/react@^19.2.4",
     "d3": "https://esm.sh/d3@^7.9.0",
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.39.0"
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "react/": "https://esm.sh/react@^19.2.4/"
   }
 }
 </script>
 </head>
 <body>
     <div id="root"></div>
-    <!-- 显式引入入口文件 -->
-    <script type="module" src="./index.tsx"></script>
+    <!-- Vite 将处理这个入口，并自动将其转换为 .js -->
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>
