@@ -7,6 +7,15 @@
     <title>AI 知识星系 - 通俗易懂的 AI 百科</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // 修复浏览器环境中 process 未定义导致的白屏问题
+        window.process = {
+            env: {
+                // Vercel 会注入环境变量，这里确保 process 对象存在
+                API_KEY: "" 
+            }
+        };
+    </script>
     <style>
         body {
             margin: 0;
@@ -45,5 +54,7 @@
 </head>
 <body>
     <div id="root"></div>
+    <!-- 显式引入入口文件 -->
+    <script type="module" src="./index.tsx"></script>
 </body>
 </html>

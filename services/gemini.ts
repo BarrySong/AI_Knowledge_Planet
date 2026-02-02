@@ -1,17 +1,31 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-// 严格遵循安全规范：从环境变量中获取 API Key
-// 注意：该变量在部署环境下会自动注入，无需在代码中硬编码
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+/**
+ * 严格遵循安全规范：从环境变量中获取 API Key
+ */
+const getApiKey = () => {
+  // 优先尝试从 process.env 获取，如果不存在则返回空字符串以防崩溃
+  return (typeof process !== 'undefined' && process.env?.API_KEY) || "";
+};
+
+const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
 /**
  * 使用 gemini-3-pro-preview 模型。
- * 该模型在处理复杂概念关联（如 MCP、RAG、Qwen 架构等）时具有更强的推理能力。
  */
 export const CURRENT_MODEL = 'gemini-3-pro-preview';
 
 export async function askGemini(concept: string, question: string) {
+  const apiKey = getApiKey();
+  
+  if (!apiKey) {
+    return {
+      text: "检测到 API Key 未配置。请在 Vercel 项目设置的环境变量中添加 API_KEY。",
+      model: CURRENT_MODEL
+    };
+  }
+
   try {
     const response = await ai.models.generateContent({
       model: CURRENT_MODEL,
@@ -28,7 +42,7 @@ export async function askGemini(concept: string, question: string) {
       4. 【结构清晰】回答要精炼，总字数控制在 300 字左右，分段阅读。
       5. 【亲切感】语气要像是在和朋友喝咖啡聊天。`,
       config: {
-        temperature: 0.8, // 提高一点创造性，使比喻更生动
+        temperature: 0.8,
         topP: 0.9,
       }
     });
@@ -40,16 +54,15 @@ export async function askGemini(concept: string, question: string) {
   } catch (error: any) {
     console.error("AI Assistant Error:", error);
     
-    // 错误处理：如果是因为 API Key 问题导致的 404 或 401，给出友好提示
     if (error.message?.includes("entity was not found") || error.message?.includes("401")) {
       return {
-        text: "哎呀，我的‘通行证’（API Key）似乎遇到了一些问题。请确保系统已经配置了正确的 API 访问权限。",
+        text: "哎呀，我的‘通行证’（API Key）似乎遇到了一些问题。请确保 Vercel 环境变量 API_KEY 已正确配置且为有效付费 Key。",
         model: CURRENT_MODEL
       };
     }
     
     return {
-      text: "抱歉，由于星际信号干扰，我暂时无法回答。请稍后再试！",
+      text: "抱歉，由于星际信号干扰，我暂时无法回答。请检查网络或 API 配置！",
       model: CURRENT_MODEL
     };
   }
