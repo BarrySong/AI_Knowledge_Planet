@@ -1,7 +1,7 @@
 {
-  "name": "ai-knowledge-galaxy",
+  "name": "ai-知识星系---通俗易懂的-ai-百科",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,17 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react-dom": "^19.2.4",
+    "react": "^19.2.4",
     "d3": "^7.9.0",
     "@google/genai": "^1.39.0"
   },
   "devDependencies": {
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "@types/d3": "^7.11.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "vite": "^6.0.5",
-    "typescript": "^5.7.2"
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
   }
 }
