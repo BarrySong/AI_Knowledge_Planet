@@ -1,68 +1,68 @@
 
-import { GoogleGenAI } from "@google/genai";
-
 /**
- * 严格遵循安全规范：从环境变量中获取 API Key
+ * 知识百科 AI 助手服务
+ * 适配方案：通义千问 (Qwen) OpenAI 兼容接口
  */
-const getApiKey = () => {
-  return process.env.API_KEY || "";
-};
 
-/**
- * 使用 gemini-3-pro-preview 模型。
- */
-export const CURRENT_MODEL = 'gemini-3-pro-preview';
+export const CURRENT_MODEL = 'qwen-max'; // 通义千问旗舰模型
 
 export async function askGemini(concept: string, question: string) {
-  const apiKey = getApiKey();
+  const apiKey = process.env.API_KEY || "";
   
   if (!apiKey) {
     return {
-      text: "检测到 API Key 未配置。请在 Vercel 项目设置的 Environment Variables 中添加 API_KEY 变量，并确保其值为有效的 Gemini API Key。",
+      text: "检测到 API Key 未配置。请在 Vercel 环境变量中添加 API_KEY。",
       model: CURRENT_MODEL
     };
   }
 
-  // 每次调用创建实例以确保获取最新的 Key（防止构建时的快照问题）
-  const ai = new GoogleGenAI({ apiKey });
+  // 识别 Key 类型并给出友好提示
+  if (apiKey.startsWith('AIzaSy')) {
+    return {
+      text: "检测到您填入的是 Google Gemini 的 Key，但代码已切换为通义千问模式。请在代码或环境变量中保持一致。",
+      model: CURRENT_MODEL
+    };
+  }
 
   try {
-    const response = await ai.models.generateContent({
-      model: CURRENT_MODEL,
-      contents: `你是一位世界级的 AI 知识科普专家，深谙全球 AI 技术生态。
-      
-      请为一位完全不懂编程和 AI 的普通人解释关于 "${concept}" 的问题。
-      
-      用户的问题是: "${question}"
-      
-      要求：
-      1. 【通俗易懂】使用极简的、贴近生活的类比（例如：像厨房里的调味品、像去菜市场买菜、像家里的插座等）。
-      2. 【专业深度】虽然语气通俗，但逻辑要准确。如果是关于国产模型（如 Qwen），请展现出对其在中文语境下优势的理解。
-      3. 【避开术语】禁止使用任何编程代码、算法公式或未解释的缩写（如必须使用，需先用大白话解释）。
-      4. 【结构清晰】回答要精炼，总字数控制在 300 字左右，分段阅读。
-      5. 【亲切感】语气要像是在和朋友喝咖啡聊天。`,
-      config: {
-        temperature: 0.8,
-        topP: 0.9,
-      }
+    // 通义千问支持 OpenAI 兼容格式的 API 调用
+    const response = await fetch("https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: CURRENT_MODEL,
+        messages: [
+          {
+            role: "system",
+            content: `你是一位世界级的 AI 知识科普专家。请为一位完全不懂编程的普通人解释关于 "${concept}" 的问题。
+            要求：1. 使用生活化类比；2. 语气亲切；3. 避开技术术语；4. 总字数 300 字左右。`
+          },
+          {
+            role: "user",
+            content: question
+          }
+        ],
+        temperature: 0.8
+      })
     });
 
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error?.message || `HTTP error! status: ${response.status}`);
+    }
+
     return {
-      text: response.text || "我正在整理思绪，请再问我一次吧。",
+      text: data.choices[0].message.content,
       model: CURRENT_MODEL
     };
   } catch (error: any) {
-    console.error("AI Assistant Error:", error);
-    
-    if (error.message?.includes("entity was not found") || error.message?.includes("401")) {
-      return {
-        text: "API Key 似乎无效或权限不足。请检查 Vercel 环境变量 API_KEY 的设置。",
-        model: CURRENT_MODEL
-      };
-    }
-    
+    console.error("Qwen API Error:", error);
     return {
-      text: "抱歉，由于星际信号干扰，我暂时无法回答。请检查网络或 API 配置！",
+      text: `抱歉，AI 助手暂时罢工了。原因：${error.message || '网络连接失败'}。请检查您的 API_KEY 是否正确，或是否在 Vercel 中进行了 Redeploy。`,
       model: CURRENT_MODEL
     };
   }

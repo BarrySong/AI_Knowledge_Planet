@@ -14,7 +14,6 @@ const Sidebar: React.FC<Props> = ({ node, onClose }) => {
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // 计算当前星球的相邻节点及其关联关系
   const neighbors = useMemo(() => {
     if (!node) return [];
     return KNOWLEDGE_DATA.links
@@ -49,7 +48,6 @@ const Sidebar: React.FC<Props> = ({ node, onClose }) => {
 
   return (
     <div className={`fixed top-0 right-0 h-full w-full md:w-96 bg-gray-900 bg-opacity-95 shadow-2xl border-l border-gray-700 transition-transform duration-300 transform z-50 flex flex-col no-scrollbar`}>
-      {/* Header */}
       <div className="p-6 border-b border-gray-700 flex justify-between items-center bg-gray-800">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <span 
@@ -63,7 +61,6 @@ const Sidebar: React.FC<Props> = ({ node, onClose }) => {
         </button>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
         <section>
           <h3 className="text-sm font-semibold text-blue-400 uppercase tracking-wider mb-2">一句话概括</h3>
@@ -77,7 +74,6 @@ const Sidebar: React.FC<Props> = ({ node, onClose }) => {
           <p className="text-blue-100 italic">“{node.analogy}”</p>
         </section>
 
-        {/* 使用示例板块 */}
         {node.usageExample && (
           <section className="bg-emerald-900 bg-opacity-20 p-4 rounded-xl border border-emerald-500 border-opacity-30">
             <h3 className="text-sm font-semibold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-2">
@@ -89,7 +85,6 @@ const Sidebar: React.FC<Props> = ({ node, onClose }) => {
           </section>
         )}
 
-        {/* 星系关联板块 */}
         {neighbors.length > 0 && (
           <section>
             <h3 className="text-sm font-semibold text-orange-400 uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -127,7 +122,6 @@ const Sidebar: React.FC<Props> = ({ node, onClose }) => {
           <p className="text-gray-300">{node.importance}</p>
         </section>
 
-        {/* AI Interaction */}
         <div className="pt-6 border-t border-gray-700">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-yellow-400 uppercase tracking-wider flex items-center gap-2">
