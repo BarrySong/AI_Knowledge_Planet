@@ -2,45 +2,45 @@
 import { GoogleGenAI } from "@google/genai";
 
 /**
- * 核心模型配置
- */
-export const CURRENT_MODEL = 'gemini-3-pro-preview';
-
-/**
- * 安全获取 API Key
+ * 严格遵循安全规范：从环境变量中获取 API Key
  */
 const getApiKey = () => {
+  // 优先尝试从 process.env 获取，如果不存在则返回空字符串以防崩溃
   return (typeof process !== 'undefined' && process.env?.API_KEY) || "";
 };
+
+const ai = new GoogleGenAI({ apiKey: getApiKey() });
+
+/**
+ * 使用 gemini-3-pro-preview 模型。
+ */
+export const CURRENT_MODEL = 'gemini-3-pro-preview';
 
 export async function askGemini(concept: string, question: string) {
   const apiKey = getApiKey();
   
   if (!apiKey) {
     return {
-      text: "检测到 API_KEY 未配置。请在 Vercel 项目的 Environment Variables 中添加该变量并重新部署。",
+      text: "检测到 API Key 未配置。请在 Vercel 项目设置的环境变量中添加 API_KEY。",
       model: CURRENT_MODEL
     };
   }
 
-  // 重要：每次调用前创建新实例，确保使用最新的环境配置
-  const ai = new GoogleGenAI({ apiKey });
-
   try {
     const response = await ai.models.generateContent({
       model: CURRENT_MODEL,
-      contents: `你是一位世界级的 AI 知识科普专家，深谙全球 AI 技术生态。
+      contents: `你是一位世界级的 AI 知识科普专家，深谙全球 AI 技术生态（包括 Gemini, Claude, GPT 以及国产大模型如通义千问 Qwen 等）。
       
       请为一位完全不懂编程和 AI 的普通人解释关于 "${concept}" 的问题。
       
       用户的问题是: "${question}"
       
       要求：
-      1. 【通俗易懂】使用极简的、贴近生活的类比（例如：像厨房里的调味品、像去菜市场买菜等）。
-      2. 【专业深度】逻辑要准确，重点突出。如果是关于国产模型（如 Qwen），展现对其优势的理解。
-      3. 【避开术语】禁止使用代码或未解释的缩写。
-      4. 【结构清晰】分段阅读，总字数控制在 300 字左右。
-      5. 【亲切感】语气要像是在和朋友聊天。`,
+      1. 【通俗易懂】使用极简的、贴近生活的类比（例如：像厨房里的调味品、像去菜市场买菜、像家里的插座等）。
+      2. 【专业深度】虽然语气通俗，但逻辑要准确。如果是关于国产模型（如 Qwen），请展现出对其在中文语境下优势的理解。
+      3. 【避开术语】禁止使用任何编程代码、算法公式或未解释的缩写（如必须使用，需先用大白话解释）。
+      4. 【结构清晰】回答要精炼，总字数控制在 300 字左右，分段阅读。
+      5. 【亲切感】语气要像是在和朋友喝咖啡聊天。`,
       config: {
         temperature: 0.8,
         topP: 0.9,
@@ -52,17 +52,17 @@ export async function askGemini(concept: string, question: string) {
       model: CURRENT_MODEL
     };
   } catch (error: any) {
-    console.error("Gemini API Error:", error);
+    console.error("AI Assistant Error:", error);
     
     if (error.message?.includes("entity was not found") || error.message?.includes("401")) {
       return {
-        text: "API Key 似乎无效或权限不足。请检查 Vercel 环境变量设置。",
+        text: "哎呀，我的‘通行证’（API Key）似乎遇到了一些问题。请确保 Vercel 环境变量 API_KEY 已正确配置且为有效付费 Key。",
         model: CURRENT_MODEL
       };
     }
     
     return {
-      text: "抱歉，思绪被星际干扰中断了，请稍后再试。",
+      text: "抱歉，由于星际信号干扰，我暂时无法回答。请检查网络或 API 配置！",
       model: CURRENT_MODEL
     };
   }
